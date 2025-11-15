@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Crosswords · Enigmistics</title><meta name="title" content="Crosswords · Enigmistics"/><meta property="og:title" content="Crosswords · Enigmistics"/><meta property="twitter:title" content="Crosswords · Enigmistics"/><meta name="description" content="Documentation for Enigmistics."/><meta property="og:description" content="Documentation for Enigmistics."/><meta property="twitter:description" content="Documentation for Enigmistics."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="Enigmistics logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">Enigmistics</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Enigmistics</a></li><li><a class="tocitem" href="../wordgames/">Wordgames</a></li><li class="is-active"><a class="tocitem" href>Crosswords</a><ul class="internal"><li><a class="tocitem" href="#Grid-utils"><span>Grid utils</span></a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Crosswords</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Crosswords</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/federicomor/Enigmistics" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Crosswords"><a class="docs-heading-anchor" href="#Crosswords">Crosswords</a><a id="Crosswords-1"></a><a class="docs-heading-anchor-permalink" href="#Crosswords" title="Permalink"></a></h1><ul><li><a href="#Grid-utils">Grid utils</a></li></ul><h2 id="Grid-utils"><a class="docs-heading-anchor" href="#Grid-utils">Grid utils</a><a id="Grid-utils-1"></a><a class="docs-heading-anchor-permalink" href="#Grid-utils" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Enigmistics.create_grid" href="#Enigmistics.create_grid"><code>Enigmistics.create_grid</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>create_grid(rows::Int, cols::Int; type=&quot;blank&quot;, probability=1.0, from=ALPHABET)</p><p>Create a grid of given number of <code>rows</code> and <code>cols</code>. </p><p>The argument <code>type</code> can either be &quot;blank&quot; (all empty cells) or &quot;random&quot; (grid randomly filled with density proportional to the given probability), while <code>from</code> indicates the set of characters to use when filling the grid randomly (default is ALPHABET, which contains only letters, otherwise there is EXT_ALPHABET which also contains black and empty cells).</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; create_grid(4,4,type=&quot;blank&quot;)
+4×4 Matrix{Char}:
+ &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;
+ &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;
+ &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;
+ &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;
+
+julia&gt; create_grid(4,4,type=&quot;random&quot;)
+4×4 Matrix{Char}:
+ &#39;G&#39;  &#39;V&#39;  &#39;A&#39;  &#39;Y&#39;
+ &#39;X&#39;  &#39;U&#39;  &#39;N&#39;  &#39;B&#39;
+ &#39;X&#39;  &#39;Z&#39;  &#39;P&#39;  &#39;B&#39;
+ &#39;J&#39;  &#39;E&#39;  &#39;Z&#39;  &#39;U&#39;
+
+julia&gt; create_grid(4,4,type=&quot;random&quot;,probability=0.7, from=EXT_ALPHABET)
+4×4 Matrix{Char}:
+ &#39; &#39;  &#39;H&#39;  &#39;D&#39;  &#39; &#39;
+ &#39; &#39;  &#39; &#39;  &#39;H&#39;  &#39; &#39;
+ &#39;U&#39;  &#39;E&#39;  &#39; &#39;  &#39;P&#39;
+ &#39;■&#39;  &#39;B&#39;  &#39;C&#39;  &#39;A&#39;</code></pre></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Enigmistics.show_grid" href="#Enigmistics.show_grid"><code>Enigmistics.show_grid</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">show_grid(grid::Matrix{Char}; empty_placeholder = &quot;⋅&quot;, style=&quot;single&quot;)</code></pre><p>Show the grid in the console, with optional placeholder for empty cells and style of borders (either &quot;single&quot; or &quot;double&quot;).    </p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; g = create_grid(9,11,type=&quot;random&quot;, from=EXT_ALPHABET);
+
+julia&gt; show_grid(g,style=&quot;single&quot;)
+     1  2  3  4  5  6  7  8  9 10 11 
+   ┌─────────────────────────────────┐
+1  │ Z  P  E  X  T  U  O  B  E  N  V │
+2  │ V  A  R  R  D  N  Q  F  Z  I  T │
+3  │ Y  U  R  ⋅  F  ⋅  S  Z  K  C  D │
+4  │ D  N  Y  U  L  L  ■  S  G  Q  C │
+5  │ D  D  W  V  Q  S  L  M  O  P  J │
+6  │ ■  K  O  G  I  ■  D  Z  Q  A  ⋅ │
+7  │ U  U  C  X  G  S  Y  C  F  W  E │
+8  │ Q  D  V  W  G  O  O  B  Y  P  S │
+9  │ L  H  Y  B  Q  Q  S  B  M  ■  S │
+   └─────────────────────────────────┘
+
+julia&gt; show_grid(g,style=&quot;double&quot;, empty_placeholder = &quot;_&quot;)
+     1  2  3  4  5  6  7  8  9 10 11 
+   ╔═════════════════════════════════╗
+1  ║ Z  P  E  X  T  U  O  B  E  N  V ║
+2  ║ V  A  R  R  D  N  Q  F  Z  I  T ║
+3  ║ Y  U  R  _  F  _  S  Z  K  C  D ║
+4  ║ D  N  Y  U  L  L  ■  S  G  Q  C ║
+5  ║ D  D  W  V  Q  S  L  M  O  P  J ║
+6  ║ ■  K  O  G  I  ■  D  Z  Q  A  _ ║
+7  ║ U  U  C  X  G  S  Y  C  F  W  E ║
+8  ║ Q  D  V  W  G  O  O  B  Y  P  S ║
+9  ║ L  H  Y  B  Q  Q  S  B  M  ■  S ║
+   ╚═════════════════════════════════╝</code></pre></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Enigmistics.insert_row_above" href="#Enigmistics.insert_row_above"><code>Enigmistics.insert_row_above</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">insert_row_above(grid::Matrix{Char})</code></pre><p>Take a grid and insert an empty row above it, returning the new grid.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; g = create_grid(3,3,type=&quot;random&quot;)
+3×3 Matrix{Char}:
+ &#39;Z&#39;  &#39;D&#39;  &#39;S&#39;
+ &#39;W&#39;  &#39;N&#39;  &#39;Q&#39;
+ &#39;U&#39;  &#39;V&#39;  &#39;S&#39;
+
+julia&gt; insert_row_above(g)
+4×3 Matrix{Char}:
+ &#39; &#39;  &#39; &#39;  &#39; &#39;
+ &#39;Z&#39;  &#39;D&#39;  &#39;S&#39;
+ &#39;W&#39;  &#39;N&#39;  &#39;Q&#39;
+ &#39;U&#39;  &#39;V&#39;  &#39;S&#39;</code></pre></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Enigmistics.insert_row_below" href="#Enigmistics.insert_row_below"><code>Enigmistics.insert_row_below</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">insert_row_below(grid::Matrix{Char})</code></pre><p>Take a grid and insert an empty row below it, returning the new grid.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; g = create_grid(3,3,type=&quot;random&quot;)
+3×3 Matrix{Char}:
+ &#39;Z&#39;  &#39;D&#39;  &#39;S&#39;
+ &#39;W&#39;  &#39;N&#39;  &#39;Q&#39;
+ &#39;U&#39;  &#39;V&#39;  &#39;S&#39;
+
+julia&gt; insert_row_below(g)
+4×3 Matrix{Char}:
+ &#39;Z&#39;  &#39;D&#39;  &#39;S&#39;
+ &#39;W&#39;  &#39;N&#39;  &#39;Q&#39;
+ &#39;U&#39;  &#39;V&#39;  &#39;S&#39;
+ &#39; &#39;  &#39; &#39;  &#39; &#39;</code></pre></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Enigmistics.insert_col_right" href="#Enigmistics.insert_col_right"><code>Enigmistics.insert_col_right</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">insert_col_right(grid::Matrix{Char})</code></pre><p>Take a grid and insert an empty column on the right of it, returning the new grid.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; g = create_grid(3,3,type=&quot;random&quot;)
+3×3 Matrix{Char}:
+ &#39;Z&#39;  &#39;D&#39;  &#39;S&#39;
+ &#39;W&#39;  &#39;N&#39;  &#39;Q&#39;
+ &#39;U&#39;  &#39;V&#39;  &#39;S&#39;
+
+julia&gt; insert_col_right(g)
+3×4 Matrix{Char}:
+ &#39;Z&#39;  &#39;D&#39;  &#39;S&#39;  &#39; &#39;
+ &#39;W&#39;  &#39;N&#39;  &#39;Q&#39;  &#39; &#39;
+ &#39;U&#39;  &#39;V&#39;  &#39;S&#39;  &#39; &#39;
+</code></pre></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Enigmistics.insert_col_left" href="#Enigmistics.insert_col_left"><code>Enigmistics.insert_col_left</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">insert_col_left(grid::Matrix{Char})</code></pre><p>Take a grid and insert an empty column on the left of it, returning the new grid.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; g = create_grid(3,3,type=&quot;random&quot;)
+3×3 Matrix{Char}:
+ &#39;Z&#39;  &#39;D&#39;  &#39;S&#39;
+ &#39;W&#39;  &#39;N&#39;  &#39;Q&#39;
+ &#39;U&#39;  &#39;V&#39;  &#39;S&#39;
+
+julia&gt; insert_col_left(g)
+3×4 Matrix{Char}:
+ &#39; &#39;  &#39;Z&#39;  &#39;D&#39;  &#39;S&#39;
+ &#39; &#39;  &#39;W&#39;  &#39;N&#39;  &#39;Q&#39;
+ &#39; &#39;  &#39;U&#39;  &#39;V&#39;  &#39;S&#39;
+</code></pre></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Enigmistics.insert" href="#Enigmistics.insert"><code>Enigmistics.insert</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">insert(grid::Matrix{Char}, what::Symbol)</code></pre><p>Take a grid and insert an empty row or column above/below or left/right of it, based on the  symbol given by <code>what</code> (<code>:row_above</code>, <code>:row_below</code>, <code>:col_left</code>, <code>:col_right</code>), returning the new grid.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Enigmistics.shrink" href="#Enigmistics.shrink"><code>Enigmistics.shrink</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">shrink(grid::Matrix{Char})</code></pre><p>Take a grid and remove all-empty rows and columns from its borders. I.e., fits its contents to the smallest possible bounding box.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using Random; Random.seed!(83)
+julia&gt; g = create_grid(7,7,type=&quot;random&quot;,probability=0.2)
+7×7 Matrix{Char}:
+ &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39;C&#39;  &#39; &#39;
+ &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39;M&#39;
+ &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;
+ &#39; &#39;  &#39; &#39;  &#39;V&#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;
+ &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39;A&#39;  &#39; &#39;  &#39; &#39;
+ &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39;K&#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;
+ &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39;Z&#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;
+
+julia&gt; shrink(g)
+7×5 Matrix{Char}:
+ &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39;C&#39;  &#39; &#39;
+ &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39;M&#39;
+ &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;
+ &#39;V&#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;
+ &#39; &#39;  &#39; &#39;  &#39;A&#39;  &#39; &#39;  &#39; &#39;
+ &#39; &#39;  &#39;K&#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;
+ &#39; &#39;  &#39;Z&#39;  &#39; &#39;  &#39; &#39;  &#39; &#39;</code></pre></div></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../wordgames/">« Wordgames</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Thursday 13 November 2025 18:02">Thursday 13 November 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
