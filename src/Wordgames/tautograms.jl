@@ -3,6 +3,8 @@
 
 Check if a given string is a tautogram, i.e., all words in the string start with the same letter.
 
+See also [`scan_for_tautograms`](@ref).
+
 # Examples
 ```julia-repl
 julia> is_tautogram("Disney declared: 'Donald Duck definitely deserves devotion'")
@@ -23,7 +25,7 @@ function is_tautogram(s::AbstractString)
             return false
         end
     end
-    return true
+    return isletter(first_letter)
 end
 
 # is_tautogram("Disney declared: 'Donald Duck definitely deserves devotion'")
@@ -33,21 +35,23 @@ end
 """
     scan_for_tautograms(text::String; min_length_words=5, max_length_words=20, print_results=false)
 
-Scan a text for sequences of words which are tautograms, i.e. where successive words all start with the same letter.
+Scan a text and look for sequences of words which are tautograms.
 
-It returns a vector of matches where each match is a tuple `(matching_range, matching_string)`.
+Return a vector of matches in the form `(matching_range, matching_string)`.
 
 # Arguments
 - `text`: the input text to scan
-- `min_length_words=5`: when looking for tautograms, consider only sequences of words whose total number is above this threshold
-- `max_length_words=20`: when looking for tautograms, consider only sequences of words whose total number is below this threshold
+- `min_length_words=5`: consider only sequences with at least this number of words
+- `max_length_words=20`: consider only sequences with at least this number of words
 - `print_results=false`: whether to print results or just return them
+
+See also [`is_tautogram`](@ref).
 
 # Examples
 ```julia-repl
 julia> text = clean_read("../texts/paradise_lost.txt", newline_replace="/");
 
-julia> out = scan_for_tautograms(text, min_length_words=5, max_length_words=20)
+julia> scan_for_tautograms(text, min_length_words=5, max_length_words=20)
 6-element Vector{Any}:
  (20801:20830, "and ASCALON, / And ACCARON and")
  (110257:110281, "Topaz, to the Twelve that")

@@ -17,7 +17,7 @@ COL_LEFT = :col_left
 COL_RIGHT = :col_right
 
 """
-   create_grid(rows::Int, cols::Int; type="blank", probability=1.0, from=ALPHABET)
+    create_grid(rows::Int, cols::Int; type="blank", probability=1.0, from=ALPHABET)
 
 Create a grid of given number of `rows` and `cols`. 
 
@@ -146,7 +146,7 @@ function show_grid(io::IO,grid::Matrix{Char}; empty_placeholder = "⋅", style="
 
     # bottom border
     print(io, " "^pad, borders[5], borders[3]^(ncols*3), borders[6])
-    println(io, "")
+    # println(io, "")
 end
 show_grid(grid::Matrix{Char}; empty_placeholder = "⋅", style="single") = show_grid(stdout,grid; empty_placeholder=empty_placeholder,style=style)
 
@@ -156,9 +156,9 @@ show_grid(grid::Matrix{Char}; empty_placeholder = "⋅", style="single") = show_
 
 
 """
-    insert_row_above(grid::Matrix{Char})
+    insert_row_above(grid::Matrix{Char}, times=1)
 
-Take a grid and insert an empty row above it, returning the new grid.
+Take a grid and insert `times` empty rows above it, returning the new grid.
 
 # Examples
 ```julia-repl
@@ -176,21 +176,21 @@ julia> insert_row_above(g)
  'U'  'V'  'S'
 ```
 """
-function insert_row_above(grid::Matrix{Char})
+function insert_row_above(grid::Matrix{Char}, times::Int=1)
     old_nrows, old_ncols = size(grid)
-    new_grid = create_grid(old_nrows+1, old_ncols, type="blank")
+    new_grid = create_grid(old_nrows+times, old_ncols, type="blank")
     for i in 1:old_nrows
         for j in 1:old_ncols
-            new_grid[i+1, j] = grid[i, j]
+            new_grid[i+times, j] = grid[i, j]
         end
     end
     return new_grid
 end
 
 """
-    insert_row_below(grid::Matrix{Char})
+    insert_row_below(grid::Matrix{Char}, times=1)
 
-Take a grid and insert an empty row below it, returning the new grid.
+Take a grid and insert `times` empty rows below it, returning the new grid.
 
 # Examples
 ```julia-repl
@@ -208,9 +208,9 @@ julia> insert_row_below(g)
  ' '  ' '  ' '
 ```
 """
-function insert_row_below(grid::Matrix{Char})
+function insert_row_below(grid::Matrix{Char}, times::Int=1)
     old_nrows, old_ncols = size(grid)
-    new_grid = create_grid(old_nrows+1, old_ncols, type="blank")
+    new_grid = create_grid(old_nrows+times, old_ncols, type="blank")
     for i in 1:old_nrows
         for j in 1:old_ncols
             new_grid[i, j] = grid[i, j]
@@ -220,9 +220,9 @@ function insert_row_below(grid::Matrix{Char})
 end
 
 """
-    insert_col_right(grid::Matrix{Char})
+    insert_col_right(grid::Matrix{Char}, times=1)
 
-Take a grid and insert an empty column on the right of it, returning the new grid.
+Take a grid and insert `times` empty columns on the right of it, returning the new grid.
 
 # Examples
 ```julia-repl
@@ -240,9 +240,9 @@ julia> insert_col_right(g)
 
 ```
 """
-function insert_col_right(grid::Matrix{Char})
+function insert_col_right(grid::Matrix{Char}, times::Int=1)
     old_nrows, old_ncols = size(grid)
-    new_grid = create_grid(old_nrows, old_ncols+1, type="blank")
+    new_grid = create_grid(old_nrows, old_ncols+times, type="blank")
     for i in 1:old_nrows
         for j in 1:old_ncols
             new_grid[i, j] = grid[i, j]
@@ -252,9 +252,9 @@ function insert_col_right(grid::Matrix{Char})
 end
 
 """
-    insert_col_left(grid::Matrix{Char})
+    insert_col_left(grid::Matrix{Char}, times=1)
 
-Take a grid and insert an empty column on the left of it, returning the new grid.
+Take a grid and insert `times` empty columns on the left of it, returning the new grid.
 
 # Examples
 ```julia-repl
@@ -272,12 +272,12 @@ julia> insert_col_left(g)
 
 ```
 """
-function insert_col_left(grid::Matrix{Char})
+function insert_col_left(grid::Matrix{Char}, times::Int=1)
     old_nrows, old_ncols = size(grid)
-    new_grid = create_grid(old_nrows, old_ncols+1, type="blank")
+    new_grid = create_grid(old_nrows, old_ncols+times, type="blank")
     for i in 1:old_nrows
         for j in 1:old_ncols
-            new_grid[i, j+1] = grid[i, j]
+            new_grid[i, j+times] = grid[i, j]
         end
     end
     grid = new_grid
@@ -290,14 +290,19 @@ end
 # insert_row_below(g)
 
 """
-    insert(grid::Matrix{Char}, what::Symbol)
+    enlarge(grid::Matrix{Char}, how::Symbol, times=1)
 
-Take a grid and insert an empty row or column above/below or left/right of it, based on the 
-symbol given by `what` (`:row_above`, `:row_below`, `:col_left`, `:col_right`), returning the new grid.
+Return a new grid by enlarging the original with `times` empty rows or columns placed above/below or left/right, based on the 
+symbol given by `what` (`:row_above`, `:row_below`, `:col_left`, `:col_right`).
 """
-function insert(grid::Matrix{Char}, what::Symbol)
-    what in (:row_above, :row_below, :col_left, :col_right) && return eval(Symbol("insert_", what))(grid)
+function enlarge(grid::Matrix{Char}, how::Symbol, times::Int=1)
+    how in (:row_above, :row_below, :col_left, :col_right) && return eval(Symbol("insert_", how))(grid, times)
 end
+
+# g=create_grid(5,5)
+# enlarge(g,:row_below)
+# enlarge(g,:row_below,3)
+# g
 
 """
     shrink(grid::Matrix{Char})
@@ -334,20 +339,20 @@ function shrink(grid::Matrix{Char})
     left, right = 1, ncols
 
     # top boundary
-    while top <= nrows && all(grid[top, :] .== ' ')
+    while top <= nrows && all(grid[top, :] .== EMPTY_CELL .|| grid[top, :] .== BLACK_CELL)
         top += 1
     end
     # bottom boundary
-    while bottom >= 1 && all(grid[bottom, :] .== ' ')
+    while bottom >= 1 && all(grid[bottom, :] .== EMPTY_CELL .|| grid[bottom, :] .== BLACK_CELL)
         bottom -= 1
     end
 
     # left boundary
-    while left <= ncols && all(grid[:, left] .== ' ')
+    while left <= ncols && all(grid[:, left] .== EMPTY_CELL .|| grid[:, left] .== BLACK_CELL)
         left += 1
     end
     # right boundary
-    while right >= 1 && all(grid[:, right] .== ' ')
+    while right >= 1 && all(grid[:, right] .== EMPTY_CELL .|| grid[:, right] .== BLACK_CELL)
         right -= 1
     end
 
@@ -358,8 +363,12 @@ function shrink(grid::Matrix{Char})
     return grid[top:bottom, left:right]
 end
 
-# i = rand(Int8); @show i; Random.seed!(i); g = create_grid(7,7,type="random",probability=0.2)
-# Random.seed!(83); g = create_grid(7,7,type="random",probability=0.2)
+# i = rand(Int8); @show i; Random.seed!(i); g = create_grid(7,7,type="random",probability=0.2, from=EXT_ALPHABET)
+# g[1,6] = EMPTY_CELL
+# g
+# @show g
+# # g = [' ' '■' ' ' ' ' ' ' ' ' ' '; ' ' ' ' ' ' ' ' ' ' ' ' ' '; ' ' ' ' ' ' ' ' ' ' ' ' ' '; ' ' 'G' ' ' ' ' ' ' 'M' 'X'; ' ' ' ' ' ' ' ' ' ' ' ' ' '; ' ' ' ' ' ' ' ' 'V' ' ' ' '; ' ' ' ' ' ' 'S' ' ' ' ' ' ']
+# # Random.seed!(83); g = create_grid(7,7,type="random",probability=0.2)
 # # show_grid(g)
 # gg = shrink(g)
 # g = shrink(g)

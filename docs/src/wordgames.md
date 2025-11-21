@@ -9,6 +9,7 @@ Depth = 2:3
 clean_read
 clean_text
 count_letters
+snip
 ```
 
 ## Anagrams

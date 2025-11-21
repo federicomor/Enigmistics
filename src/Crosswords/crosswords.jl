@@ -1,5 +1,14 @@
-import Base: show
+"""
+	CrosswordWord
 
+Structure for a word placed in the crossword.
+
+# Fields
+- `word::String`: the actual word 
+- `row::Int`: starting row
+- `col::Int`: starting column
+- `direction::Symbol`: either `:vertical` or `:horizontal` 
+"""
 mutable struct CrosswordWord 
 	word::String
 	row::Int
@@ -7,12 +16,31 @@ mutable struct CrosswordWord
 	direction::Symbol # :vertical or :horizontal 
 end 
 
+"""
+	CrosswordBlackCell
+
+Structure for a black cell placed in the crossword.
+
+# Fields
+- `count::Float64`: number of words that share that black cell (or `Inf64` if it was manually placed)
+- `manual::Bool`: if the cell was manually set by user or automatically derived based on surronding words  
+"""
 mutable struct CrosswordBlackCell
-	count::Float64 # count of words that share that black cel
+	count::Float64 # count of words that share that black cell
 	manual::Bool # was automatic based on surronding words or was manually set by user
 end
 
+"""
+	CrosswordPuzzle
 
+Structure for a crossword puzzle.
+
+# Fields
+
+- `grid::Matrix{Char}`: the actual crossword grid
+- `words::Vector{CrosswordWord}`: vector containing all the words
+- `black_cells::Dict{Tuple{Int,Int}, CrosswordBlackCell}`: dictionary storing the black cells information
+"""
 mutable struct CrosswordPuzzle
 	grid::Matrix{Char}
 	words::Vector{CrosswordWord}
@@ -25,19 +53,175 @@ mutable struct CrosswordPuzzle
 	end
 end
 
+# other useful constructors
+"""
+	CrosswordPuzzle(rows::Int, cols::Int)
+	
+Construct a crossword with an empty grid of the given dimensions.
 
+# Examples
+```julia-repl
+julia> cw = CrosswordPuzzle(4,5)
+    1  2  3  4  5 
+  ┌───────────────┐
+1 │ ⋅  ⋅  ⋅  ⋅  ⋅ │
+2 │ ⋅  ⋅  ⋅  ⋅  ⋅ │
+3 │ ⋅  ⋅  ⋅  ⋅  ⋅ │
+4 │ ⋅  ⋅  ⋅  ⋅  ⋅ │
+  └───────────────┘
+```
+"""
 function CrosswordPuzzle(rows::Int, cols::Int) 
 	grid = create_grid(rows,cols,type="blank");
 	words = CrosswordWord[];
 	black_cells = Dict{Tuple{Int,Int}, CrosswordBlackCell}();
 	return CrosswordPuzzle(grid,words,black_cells);
 end
+# the constructor with (row, col, words) populates the grid through place_word! as only this function performs the cells-checks to see if inserting a word is compatible with the given grid
+"""
+	CrosswordPuzzle(rows::Int, cols::Int, words::Vector{CrosswordWord})
+	
+Construct a crossword with the given dimensions and words. Return an error if words don't generate compatible intersections.
 
+# Examples
+```julia-repl
+julia> words = [CrosswordWord("cat",2,2,:horizontal), CrosswordWord("bat",1,3,:vertical),
+                CrosswordWord("sir",4,4,:horizontal)];
+
+julia> CrosswordPuzzle(5,6,words)
+    1  2  3  4  5  6 
+  ┌──────────────────┐
+1 │ ⋅  ⋅  b  ⋅  ⋅  ⋅ │
+2 │ ■  c  a  t  ■  ⋅ │
+3 │ ⋅  ⋅  t  ⋅  ⋅  ⋅ │
+4 │ ⋅  ⋅  ■  s  i  r │
+5 │ ⋅  ⋅  ⋅  ⋅  ⋅  ⋅ │
+  └──────────────────┘
+
+julia> words = [CrosswordWord("cat",2,2,:horizontal), CrosswordWord("bat",1,3,:vertical),
+                CrosswordWord("sir",4,4,:horizontal), CrosswordWord("dog",1,2,:vertical)];
+
+julia> CrosswordPuzzle(5,6,words)
+┌ Warning: Cannot place word 'dog' at (1, 2) vertically due to conflict at cell (2, 2). No changes on the original grid.
+┌ Error: Words intersections are not compatible.
+```
+"""
+function CrosswordPuzzle(rows::Int, cols::Int, words::Vector{CrosswordWord}) 
+	cw = CrosswordPuzzle(rows, cols)
+	all_good = true
+	for w in words
+		all_good &= place_word!(cw, w)
+	end
+	if !all_good
+		@error "Words intersections are not compatible."
+		return nothing
+	end
+	return cw
+end
+
+# words = [CrosswordWord("cat",2,2,:horizontal), CrosswordWord("bat",1,3,:vertical),
+# 		 CrosswordWord("sir",4,4,:horizontal)];
+# CrosswordPuzzle(5,6,words)
+# words = [CrosswordWord("cat",2,2,:horizontal), CrosswordWord("bat",1,3,:vertical),
+# 		 CrosswordWord("sir",4,4,:horizontal), CrosswordWord("dog",1,2,:vertical)];
+# CrosswordPuzzle(5,6,words)
+
+
+# overload some Base functions
+Base.size(cw::CrosswordPuzzle) = size(cw.grid)
+function Base.copy(cw::CrosswordPuzzle)
+	new_grid = copy(cw.grid)
+	new_words = [CrosswordWord(w.word, w.row, w.col, w.direction) for w in cw.words]
+	new_black_cells = Dict{Tuple{Int64, Int64}, CrosswordBlackCell}()
+	for (key,cell) in cw.black_cells
+		if cell.manual
+			new_black_cells[key] = cell
+		end
+	end
+	return CrosswordPuzzle(new_grid, new_words, new_black_cells)
+end
+
+Base.:(==)(cw1::CrosswordPuzzle,cw2::CrosswordPuzzle) = cw1.grid == cw2.grid 
+
+function Base.show(io::IO, cw::CrosswordPuzzle)
+	show_crossword(io, cw, show_words=false, show_black_cells=false)
+end
+# the 3-argument show used by display(obj) on the REPL
+function Base.show(io::IO, mime::MIME"text/plain", cw::CrosswordPuzzle)
+	show_crossword(io, cw, show_words=false, show_black_cells=false)
+end
 
 """
-	update_crossword!(cw)
+	show_crossword(cw::CrosswordPuzzle; show_words=true, show_black_cells=true)
 
-Update the crossword grid based on the current words and black cells. It is called internally after any change (e.g. a word or black cell addition or remotion) to keep the grid consistent with the internal information.
+Print the crossword grid, possibly along with the list of words and the black cells details if the corresponding parameters are set to `true`.
+
+# Examples
+```julia-repl
+julia> cw = simple_crossword()
+    1  2  3  4  5  6 
+  ┌──────────────────┐
+1 │ ⋅  ⋅  b  ⋅  ⋅  ⋅ │
+2 │ ■  c  a  t  ■  ⋅ │
+3 │ ⋅  ⋅  t  ⋅  ⋅  ⋅ │
+4 │ ⋅  ⋅  ■  s  i  r │
+5 │ ⋅  ⋅  ⋅  ⋅  ⋅  ⋅ │
+  └──────────────────┘
+
+julia> show_crossword(cw)
+    1  2  3  4  5  6 
+  ┌──────────────────┐
+1 │ ⋅  ⋅  b  ⋅  ⋅  ⋅ │
+2 │ ■  c  a  t  ■  ⋅ │
+3 │ ⋅  ⋅  t  ⋅  ⋅  ⋅ │
+4 │ ⋅  ⋅  ■  s  i  r │
+5 │ ⋅  ⋅  ⋅  ⋅  ⋅  ⋅ │
+  └──────────────────┘
+  
+Horizontal:
+ - 'cat' at (2, 2)
+ - 'sir' at (4, 4)
+Vertical:
+ - 'bat' at (1, 3)
+
+Black cells:
+ - at (2, 5) was automatically derived (count=1.0)
+ - at (2, 1) was automatically derived (count=1.0)
+ - at (4, 3) was automatically derived (count=2.0)
+```
+"""
+function show_crossword(io::IO, cw::CrosswordPuzzle; show_words=true, show_black_cells=true)
+	# grid
+	show_grid(io, cw.grid)
+	# words
+	if show_words
+		if any([w.direction == :horizontal for w in cw.words]) 
+			println(io, "\n\nHorizontal:")
+			for w in filter(w -> w.direction == :horizontal, cw.words)
+				println(io, " - '", w.word, "' at (", w.row, ", ", w.col, ")")
+			end
+		end
+		if any([w.direction == :vertical for w in cw.words]) 
+				println(io, "Vertical:")
+			for w in filter(w -> w.direction == :vertical, cw.words)
+				println(io, " - '", w.word, "' at (", w.row, ", ", w.col, ")")
+			end
+		end
+	end
+	# black cells
+	if show_black_cells && !isempty(cw.black_cells)
+		println(io, "\nBlack cells:")
+		for (pos,cell) in cw.black_cells
+			println(io, " - at $pos was $(cell.manual==true ? "manually placed" : "automatically derived") (count=$(cell.count))")
+		end
+	end
+end
+show_crossword(cw::CrosswordPuzzle; show_words=true, show_black_cells=true) = show_crossword(stdout, cw; show_words=show_words, show_black_cells=show_black_cells)
+
+"""
+	update_crossword!(cw::CrosswordPuzzle)
+
+Update the crossword grid based on the current words and manually-placed black cells (other black cells are in fact placed automatically as word delimiters). It is called upon creation of an object or internally after any change to keep the grid consistent with the updated information (e.g. words/black cells placed/removed).
 """
 function update_crossword!(cw::CrosswordPuzzle)
 	nrows, ncols = size(cw.grid)
@@ -98,14 +282,111 @@ function update_crossword!(cw::CrosswordPuzzle)
 	setfield!(cw, :black_cells, new_black_cells)
 end
 
-function shrink!(cw::CrosswordPuzzle)
-	
+"""
+	simple_crossword()
 
+Return a simple crossword, useful during testing.
+
+# Examples
+```julia-repl
+julia> cw = simple_crossword()
+    1  2  3  4  5  6 
+  ┌──────────────────┐
+1 │ ⋅  ⋅  b  ⋅  ⋅  ⋅ │
+2 │ ■  c  a  t  ■  ⋅ │
+3 │ ⋅  ⋅  t  ⋅  ⋅  ⋅ │
+4 │ ⋅  ⋅  ■  s  i  r │
+5 │ ⋅  ⋅  ⋅  ⋅  ⋅  ⋅ │
+  └──────────────────┘
+```
+"""
+function simple_crossword()
+	words = [
+		CrosswordWord("cat", 2, 2, :horizontal) 
+		,CrosswordWord("bat", 1, 3, :vertical)
+		,CrosswordWord("sir", 4, 4, :horizontal)
+		]
+	cw = CrosswordPuzzle(create_grid(5, 6,type="blank"), words, Dict{Tuple{Int,Int}, CrosswordBlackCell}())
+	# enlarge!(cw, :row_above)
+	return cw
 end
 
+
+function shift_contents!(cw::CrosswordPuzzle, (Δrow, Δcol))
+	if !(Δrow==0 || Δcol==0)
+		@error "Shift by one direction per time."
+		return false
+	end
+	for cword in cw.words
+			if !(cword.row + Δrow > 0 || cword.col + Δcol > 0)
+				@error "Cannot shift words outside buondaries."
+				return false
+			else
+				cword.row += Δrow
+				cword.col += Δcol
+			end
+	end
+	bc_new = Dict{Tuple{Int64, Int64}, CrosswordBlackCell}()
+	for (key,cell) in cw.black_cells
+		if cell.manual
+			new_key = key .+ (Δrow,Δcol) 
+			if all(new_key .>= 1)
+				bc_new[new_key] = cell
+			else
+				@info "After this shift some black cells will collapse into borders."
+			end
+		end
+	end
+	setfield!(cw, :black_cells, bc_new)
+	return true
+end
+
+"""
+	enlarge!(cw::CrosswordPuzzle, how::Symbol, times=1)
+
+Enlarge the crossword grid in the direction given by `how` by inserting `times` empty rows/columns appropriately.
+
+# Examples
+```julia-repl
+julia> cw
+    1  2  3  4  5  6 
+  ┌──────────────────┐
+1 │ ⋅  ⋅  b  ⋅  ⋅  ⋅ │
+2 │ ■  c  a  t  ■  ⋅ │
+3 │ ⋅  ⋅  t  ⋅  ⋅  ⋅ │
+4 │ ⋅  ⋅  ■  s  i  r │
+5 │ ⋅  ⋅  ⋅  ⋅  ⋅  ⋅ │
+6 │ ⋅  ⋅  ⋅  ⋅  ⋅  ⋅ │
+  └──────────────────┘
+
+julia> enlarge!(cw, :col_left); cw
+    1  2  3  4  5  6  7 
+  ┌─────────────────────┐
+1 │ ⋅  ⋅  ⋅  b  ⋅  ⋅  ⋅ │
+2 │ ⋅  ■  c  a  t  ■  ⋅ │
+3 │ ⋅  ⋅  ⋅  t  ⋅  ⋅  ⋅ │
+4 │ ⋅  ⋅  ⋅  ■  s  i  r │
+5 │ ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅ │
+6 │ ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅ │
+  └─────────────────────┘
+
+julia> enlarge!(cw, :row_above, 2); cw
+    1  2  3  4  5  6  7
+  ┌─────────────────────┐
+1 │ ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅ │
+2 │ ⋅  ⋅  ⋅  ■  ⋅  ⋅  ⋅ │
+3 │ ⋅  ⋅  ⋅  b  ⋅  ⋅  ⋅ │
+4 │ ⋅  ■  c  a  t  ■  ⋅ │
+5 │ ⋅  ⋅  ⋅  t  ⋅  ⋅  ⋅ │
+6 │ ⋅  ⋅  ⋅  ■  s  i  r │
+7 │ ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅ │
+8 │ ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅ │
+  └─────────────────────┘
+```
+"""
 function enlarge!(cw::CrosswordPuzzle, how::Symbol, times::Int=1)
 	if !(how in (:row_above, :row_below, :col_left, :col_right))
-		@warn "Enlargement direction not available. No changes on the original grid."
+		@warn "Direction not recognised (available direction are :row_above, :row_below, :col_left, :col_right). No changes on the original grid."
 		return false
 	end
 	# enlarge the grid
@@ -115,174 +396,178 @@ function enlarge!(cw::CrosswordPuzzle, how::Symbol, times::Int=1)
 	# if directions are :col_right or :row_below => nothing more to do
 	# otherwise we need to shift words and black cells
 	if how == :row_above
-		for cword in cw.words
-			cword.row += times
-		end
-		bc_new = Dict{Tuple{Int64, Int64}, CrosswordBlackCell}()
-		for (key,cell) in cw.black_cells
-			if cell.manual
-				bc_new[key .+ (times,0)] = cell
-			end
-		end
-		setfield!(cw, :black_cells, bc_new)
-		update_crossword!(cw)
+		shift_contents!(cw, (times,0))
 	elseif how == :col_left
-		for cword in cw.words
-			cword.col += times
-		end
-		bc_new = Dict{Tuple{Int64, Int64}, CrosswordBlackCell}()
-		for (key,cell) in cw.black_cells
-			if cell.manual
-				bc_new[key .+ (0,times)] = cell
-			end
-		end
-		setfield!(cw, :black_cells, bc_new)
-		update_crossword!(cw)
+		shift_contents!(cw, (0,times))
 	end
-	return true
-end
-
-cw
-enlarge!(cw,:col_left);cw
-enlarge!(cw,:col_right);cw
-enlarge!(cw,:row_below);cw
-enlarge!(cw,:row_above);cw
-
-function shrink!(cw::CrosswordPuzzle)
-
-
-end
-
-
-function Base.show(io::IO, cw::CrosswordPuzzle)
-	show_crossword(io, cw, show_words=false, show_black_cells=false)
-end
-# the 3-argument show used by display(obj) on the REPL
-function Base.show(io::IO, mime::MIME"text/plain", cw::CrosswordPuzzle)
-	show_crossword(io, cw, show_words=true, show_black_cells=true)
-end
-
-"""
-	show_crossword(cw; verbose=false)
-
-Print the crossword grid along with the list of words, as well as the  black cells information if `verbose` is set to true.
-"""
-function show_crossword(io::IO, cw::CrosswordPuzzle; show_words=true, show_black_cells=true)
-	# grid
-	show_grid(io, cw.grid)
-	# words
-	if show_words
-		if any([w.direction == :horizontal for w in cw.words]) 
-			println(io, "Horizontal:")
-			for w in filter(w -> w.direction == :horizontal, cw.words)
-				println(io, " - '", w.word, "' at (", w.row, ", ", w.col, ")")
-			end
-		end
-		if any([w.direction == :vertical for w in cw.words]) 
-				println(io, "Vertical:")
-			for w in filter(w -> w.direction == :vertical, cw.words)
-				println(io, " - '", w.word, "' at (", w.row, ", ", w.col, ")")
-			end
-		end
-	end
-	# black cells
-	if show_black_cells && !isempty(cw.black_cells)
-		println(io, "Black cells:")
-		for (pos,cell) in cw.black_cells
-			println(io, " - at $pos was $(cell.manual==true ? "manually placed" : "automatically derived") (count=$(cell.count))")
-		end
-	end
-end
-show_crossword(cw::CrosswordPuzzle; show_words=true, show_black_cells=true) = show_crossword(stdout, cw; show_words=show_words, show_black_cells=show_black_cells)
-
-xx = CrosswordPuzzle(5,5)
-yy = CrosswordPuzzle(create_grid(5,5,type="blank"), CrosswordWord[], Dict{Tuple{Int,Int}, CrosswordBlackCell}())
-
-
-words = [
-	 CrosswordWord("cat", 2, 2, :horizontal) 
-	,CrosswordWord("bat", 1, 3, :vertical)
-	,CrosswordWord("sir", 4, 4, :horizontal)
-	]
-cw= CrosswordPuzzle(create_grid(6,6,type="blank"), words, Dict{Tuple{Int,Int}, CrosswordBlackCell}())
-CrosswordPuzzle(5,5)
-update_crossword!(cw)
-cw
-show_crossword(cw)
-
-"""
-	remove_word!(cw, word::String)
-
-Remove a word from the crossword puzzle. Returns true if the word was found and removed, false otherwise.
-"""
-function remove_word!(cw::CrosswordPuzzle, word::String)
-	if !(word in [w.word for w in cw.words])
-		@warn "Word '$word' not found in the crossword. No changes on the original grid."
-		return false
-	end
-	# @show cw.words
-	deleteat!(cw.words,findfirst(w->w.word==word,cw.words))
-	# @show cw.words
+	# but alwyas we have to update the crossword, as new black cells could form
 	update_crossword!(cw)
 	return true
 end
-"""
-	remove_word!(cw, cword::CrosswordWord)
-
-Remove a word from the crossword puzzle. Returns true if the word was found and removed, false otherwise.
-"""
-remove_word!(cw::CrosswordPuzzle, cword::CrosswordWord) =  remove_word!(cw,cword.word)
-
-cw
-remove_word!(cw,"dog")
-remove_word!(cw,"cat")
-cw
-show_crossword(cw,)
 
 """
-	can_place_word(cw, word::String, row, col, direction::Symbol)
+	shrink!(cw::CrosswordPuzzle)
+	
+Reduce the crossword size to its minimal representation by removing useless rows/columns.
+
+# Examples
+```julia-repl
+julia> cw
+    1  2  3  4  5  6  7  8 
+  ┌────────────────────────┐
+1 │ ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅ │
+2 │ ⋅  ⋅  ⋅  ⋅  ■  ⋅  ⋅  ⋅ │
+3 │ ⋅  ⋅  ⋅  ⋅  b  ⋅  ⋅  ⋅ │
+4 │ ⋅  ⋅  ■  c  a  t  ■  ⋅ │
+5 │ ⋅  ⋅  ⋅  ⋅  t  ⋅  ⋅  ⋅ │
+6 │ ⋅  ⋅  ⋅  ⋅  ■  s  i  r │
+7 │ ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅ │
+  └────────────────────────┘
+
+julia> shrink!(cw); cw
+    1  2  3  4  5
+  ┌───────────────┐
+1 │ ⋅  b  ⋅  ⋅  ⋅ │
+2 │ c  a  t  ■  ⋅ │
+3 │ ⋅  t  ⋅  ⋅  ⋅ │
+4 │ ⋅  ■  s  i  r │
+  └───────────────┘
+```
+"""
+function shrink!(cw::CrosswordPuzzle)
+    old_nrows, old_ncols = size(cw.grid)
+    new_nrows, new_ncols = size(cw.grid)
+    top, bottom = 1, old_nrows
+    left, right = 1, old_ncols
+
+    # top boundary
+    while top <= old_nrows && all(cw.grid[top, :] .== EMPTY_CELL .|| cw.grid[top, :] .== BLACK_CELL)
+		shift_contents!(cw, (-1,0))
+		new_nrows -= 1
+        top += 1
+    end
+    # bottom boundary
+    while bottom >= 1 && all(cw.grid[bottom, :] .== EMPTY_CELL .|| cw.grid[bottom, :] .== BLACK_CELL)
+		new_nrows -= 1
+        bottom -= 1
+    end
+    # left boundary
+    while left <= old_ncols && all(cw.grid[:, left] .== EMPTY_CELL .|| cw.grid[:, left] .== BLACK_CELL)
+		shift_contents!(cw, (0,-1))
+		new_ncols -= 1
+        left += 1
+    end
+    # right boundary
+    while right >= 1 && all(cw.grid[:, right] .== EMPTY_CELL .|| cw.grid[:, right] .== BLACK_CELL)
+		new_ncols -= 1
+        right -= 1
+    end
+
+    # If the grid is entirely empty, return a minimal grid
+    if top > bottom || left > right
+        return CrosswordPuzzle(1, 1)
+    end
+	# @show new_nrows, new_ncols
+	new_grid = create_grid(new_nrows, new_ncols)
+	setfield!(cw, :grid, new_grid)
+	update_crossword!(cw)
+	return true
+end
+
+
+
+
+"""
+	can_place_word(cw::CrosswordPuzzle, word::String, row, col, direction::Symbol)
 
 Check if a word can be placed in the crossword puzzle at the given position and direction (accepted values are `:horizontal` and `:vertical`). Returns true if the word can be placed, false otherwise.
+
+# Examples
+```julia-repl
+julia> cw = simple_crossword()
+    1  2  3  4  5  6 
+  ┌──────────────────┐
+1 │ ⋅  ⋅  b  ⋅  ⋅  ⋅ │
+2 │ ■  c  a  t  ■  ⋅ │
+3 │ ⋅  ⋅  t  ⋅  ⋅  ⋅ │
+4 │ ⋅  ⋅  ■  s  i  r │
+5 │ ⋅  ⋅  ⋅  ⋅  ⋅  ⋅ │
+  └──────────────────┘
+
+julia> can_place_word(cw, "star", 1, 4, :vertical)
+┌ Warning: Cannot place word 'star' at (1, 4) vertically due to conflict at cell (4, 4); found when checking the inner cells.
+false
+
+julia> can_place_word(cw, "star", 1, 6, :vertical) # correctly intersects with the "r" of "sir"
+true
+```
 """
 function can_place_word(cw::CrosswordPuzzle, word::String, row::Int, col::Int, direction::Symbol)
 	lw = length(word)
+	nrows, ncols = size(cw.grid)
 	if direction == :horizontal
-		if row+lw-1 > size(cw.grid,2)
-			@warn "Word '$word' does not fit in the grid horizontally at ($row, $col). No changes on the original grid."
+		if col+lw-1 > ncols
+			@warn "Word '$word' does not fit in the grid horizontally at ($row, $col)."
 			return false
 		end 
+		# check actual contents
 		for (i, ch) in enumerate(word)
 			if !(cw.grid[row, col + i - 1] == EMPTY_CELL || cw.grid[row, col + i - 1] == ch)
-				@warn "Cannot place word '$word' at ($row, $col) horizontally due to conflict at cel ($row, $(col + i - 1)). No changes on the original grid."
+				@warn "Cannot place word '$word' at ($row, $col) horizontally due to conflict at cell ($row, $(col + i - 1)); found when checking the inner cells."
 				return false
 			end
+		end
+		# check borders
+		# before the start of the word
+		if col-1>=1 && !(cw.grid[row, col-1] == EMPTY_CELL || cw.grid[row, col-1] == BLACK_CELL)
+			@warn "Cannot place word '$word' at ($row, $col) horizontally due to conflict at cell ($row, $(col-1)); found when checking the border cells."
+			return false
+		end
+		# after the end of the word
+		if col+lw<=ncols && !(cw.grid[row, col+lw] == EMPTY_CELL || cw.grid[row, col+lw] == BLACK_CELL)
+			@warn "Cannot place word '$word' at ($row, $col) horizontally due to conflict at cell ($row, $(col+lw)); found when checking the border cells."
+			return false
 		end
 	elseif direction == :vertical
-		if col+lw-1 > size(cw.grid,1)
-			@warn "Word '$word' does not fit in the grid vertically at ($row, $col). No changes on the original grid."
+		if row+lw-1 > nrows
+			@warn "Word '$word' does not fit in the grid vertically at ($row, $col)."
 			return false
 		end 
+		# check actual contents
 		for (i, ch) in enumerate(word)
 			if !(cw.grid[row + i - 1, col] == EMPTY_CELL || cw.grid[row + i - 1, col] == ch)
-				@warn "Cannot place word '$word' at ($row, $col) vertically due to conflict at cell ($(row + i - 1), $col). No changes on the original grid."
+				@warn "Cannot place word '$word' at ($row, $col) vertically due to conflict at cell ($(row + i - 1), $col); found when checking the inner cells."
+				# @show cw.grid[row + i - 1, col], i, ch
 				return false
 			end
 		end
+		# check borders
+		# before the start of the word
+		if row-1>=1 && !(cw.grid[row-1,col] == EMPTY_CELL || cw.grid[row-1,col] == BLACK_CELL)
+			@warn "Cannot place word '$word' at ($row, $col) vertically due to conflict at cell ($(row-1), $col); found when checking the border cells."
+			return false
+		end
+		# after the end of the word
+		if row+lw<=nrows && !(cw.grid[row+lw, col] == EMPTY_CELL || cw.grid[row+lw, col] == BLACK_CELL)
+			@warn "Cannot place word '$word' at ($row, $col) vertically due to conflict at cell ($(row+lw), $col); found when checking the border cells."
+			return false
+		end
 	else
-		@error "Wrong direction provided; use :horizontal or :vertical. No changes on the original grid."
+		@error "Wrong direction provided; use :horizontal or :vertical."
 		return false
 	end
 	return true
 end
 """
-	can_place_word(cw, cwword::CrosswordWord)
+	can_place_word(cw::CrosswordPuzzle, cwword::CrosswordWord)
 
 Check if a word can be placed in the crossword puzzle at the given position and direction (accepted values are `:horizontal` and `:vertical`). Returns true if the word can be placed, false otherwise.
 """
 can_place_word(cw::CrosswordPuzzle, cword::CrosswordWord) = can_place_word(cw, cword.word, cword.row, cword.col, cword.direction)
 
 """
-	place_word!(cw, word::String, row, col, direction::Symbol)
+	place_word!(cw::CrosswordPuzzle, word::String, row, col, direction::Symbol)
+	place_word!(cw::CrosswordPuzzle, cword::CrosswordWord)
 
 Place a word in the crossword puzzle at the given position and direction (accepted values are `:horizontal` and `:vertical`). Returns true if the word was successfully placed, false otherwise.
 """
@@ -299,23 +584,30 @@ function place_word!(cw::CrosswordPuzzle, word::String, row::Int, col::Int, dire
 		return false
 	end
 end
-"""
-	place_word!(cw, cword::CrosswordWord)
-
-Place a word in the crossword puzzle at the given position and direction (accepted values are `:horizontal` and `:vertical`). Returns true if the word was successfully placed, false otherwise.
-"""
 place_word!(cw::CrosswordPuzzle, cword::CrosswordWord) = place_word!(cw::CrosswordPuzzle, cword.word, cword.row, cword.col, cword.direction)
 
-cw
-place_word!(cw, "dog", 1, 1, :horizontal)
-cw
-place_word!(cw, "seb", 1, 1, :horizontal)
-cw
-remove_word!(cw, "seb")
-place_word!(cw, "pratter", 2, 1, :horizontal)
+"""
+	remove_word!(cw::CrosswordPuzzle, word::String)
+	remove_word!(cw::CrosswordPuzzle, cword::CrosswordWord)
+
+Remove a word from the crossword puzzle. Returns true if the word was found and removed, false otherwise.
+"""
+function remove_word!(cw::CrosswordPuzzle, word::String)
+	if !(word in [w.word for w in cw.words])
+		@warn "Word '$word' not found in the crossword. No changes on the original grid."
+		return false
+	end
+	# @show cw.words
+	deleteat!(cw.words,findfirst(w->w.word==word,cw.words))
+	# @show cw.words
+	update_crossword!(cw)
+	return true
+end
+remove_word!(cw::CrosswordPuzzle, cword::CrosswordWord) =  remove_word!(cw,cword.word)
+
 
 """
-	place_black_cell!(cw, row, col)
+	place_black_cell!(cw::CrosswordPuzzle, row::Int, col::Int)
 
 Place a black cell in the crossword puzzle at the given position. Returns true if the black cell was successfully placed, false otherwise.
 """
@@ -334,13 +626,9 @@ function place_black_cell!(cw::CrosswordPuzzle, row::Int, col::Int)
 	update_crossword!(cw)
 end
 
-# place_black_cell!(cw, 3, 2)
-place_black_cell!(cw, 5, 1)
-cw
-place_word!(cw, "tv", 3, 1, :vertical)
 
 """
-	remove_black_cell!(cw, row, col)
+	remove_black_cell!(cw::CrosswordPuzzle, row::Int, col::Int)
 
 Remove a black cell from the crossword puzzle at the given position. Returns true if the black cell was successfully placed, false otherwise.
 """
@@ -360,10 +648,41 @@ function remove_black_cell!(cw::CrosswordPuzzle, row::Int, col::Int)
 		end
 	end
 end
-cw
-place_black_cell!(cw, 5, 1)
-cw
-remove_black_cell!(cw, 5, 1)
-cw
-place_black_cell!(cw,5,5); cw
-remove_black_cell!(cw,5,5); cw
+
+# cw = simple_crossword()
+# enlarge!(cw,:col_left);cw
+# enlarge!(cw,:col_right);cw
+# enlarge!(cw,:row_below);cw
+# enlarge!(cw,:row_above);cw
+# shrink!(cw);cw
+
+# cw
+# remove_word!(cw,"dog")
+# remove_word!(cw,"cat")
+# cw
+
+
+# enlarge!(cw, :col_right, 2)
+# cw
+# place_word!(cw, "dog", 2, 2, :horizontal)
+# place_word!(cw, "dog", 2, 3, :horizontal)
+# place_word!(cw, "dog", 2, 4, :horizontal)
+# cw
+# can_place_word(cw, "dri", 2, 4, :vertical)
+# place_word!(cw, "dri", 2, 4, :vertical)
+# cw
+# enlarge!(cw, :row_below, 2)
+# cw
+# place_word!(cw, "seb", 1, 1, :horizontal)
+# cw
+# remove_word!(cw, "seb")
+# place_word!(cw, "pratter", 2, 1, :horizontal)
+
+# cw
+# place_black_cell!(cw, 5, 1)
+# cw
+# remove_black_cell!(cw, 5, 1)
+# cw
+# place_black_cell!(cw,5,5); cw
+# remove_black_cell!(cw,5,5); cw
+

@@ -5,6 +5,8 @@ Check if a string is a pangram, i.e. if it contains at least once all the letter
 
 The `language` parameter can be used to specify which alphabet to use (currently supported values are "en", English and "it", Italian). In particular, the english case consists of the vector `collect('a':'z')` while the italian one of the english vector having removed characters `'jwxyz'`. If `verbose` is set to `true` the function will also inform, in case of non-pangrams, which were the missing letters.
 
+See also [`scan_for_pangrams`](@ref).
+
 # Examples
 ```julia-repl
 julia> is_pangram("The quick ORANGE fox jumps over the lazy dog", verbose=true)
@@ -59,13 +61,15 @@ end
 
 Scan a text and look for sequences of words which are pangrams.
 
-It returns a vector of matches in the form of a tuple `(matching_range, matching_string)`.
+Return a vector of matches in the form `(matching_range, matching_string)`.
 
 # Arguments
 - `text`: the input text to scan
-- `max_length_letters=60`: when looking for pangrams, ignore sequences of words whose length is above this threshold
-- `language="en"` and `verbose=false`: same parameters as in [`is_pangram`](@ref)
+- `max_length_letters=60`: consider only sequences of words with at most this number of letters
+- `language="en"`: language used to determine the alphabet
 - `print_results=false`: whether to print results or just return them
+
+See also [`is_pangram`](@ref).
 
 # Examples
 ```julia-repl

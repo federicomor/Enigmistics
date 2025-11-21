@@ -3,6 +3,8 @@
 
 Check if a string is a heterogram, i.e. if it does not contain any repeated letter.
 
+See also [`scan_for_heterograms`](@ref).
+
 # Examples
 ```julia-repl
 julia> is_heterogram("unpredictable") # letter 'e' is repeated
@@ -29,14 +31,16 @@ end
 """
     scan_for_heterograms(text::String; min_length_letters=10)
 
-Scan text for sequences of words that form heterograms, i.e. strings with no repeated letters.
+Scan a text and look for sequences of words which are heterograms.
 
-It returns a vector of matches in the form of a tuple `(matching_range, matching_string)`.
+Return a vector of matches in the form `(matching_range, matching_string)`.
 
 # Arguments
 - `text`: the input text to scan
-- `min_length_letters=10`: ` when looking for heterograms, consider only sequences of words whose total length is above this threshold
+- `min_length_letters=10`: consider only sequences of words with at most this number of letters
 - `print_results=false`: whether to print results or just return them
+
+See also [`is_heterogram`](@ref).
 
 # Examples
 ```julia-repl

@@ -1,9 +1,11 @@
 """
     is_lipogram(s::AbstractString, wrt::AbstractString)
 
-Check if a string `s` is a lipogram with respect to the letters given by `wrt`, i.e. if `s` does not contain any letters from `wrt`.
+Check if a string `s` is a lipogram with respect to the letters given by `wrt`, i.e. if `s` does not contain any letters from `wrt`. 
+    
+The parameter `wrt` is a string so that single or multiple letters can be easily specified.
 
-The parameter `wrt` is a string so that a single or multiple letters can be easily specified.
+See also [`scan_for_lipograms`](@ref).
 
 # Examples
 ```julia-repl
@@ -30,28 +32,29 @@ end
 
 # is_lipogram("This is a small writing without using a famous symbol following B","e", verbose=true)
 # is_pangram("The quick brown fox jumps over the lazy cat"; verbose=true)
-# is_lipogram("The quick brown fox jumps over the lazy cat","dg") # 'd' and 'g' are missing
+# is_lipogram("The quick brown fox jumps over the lazy cat","dgef",verbose=true) # 'd' and 'g' are missing
 
 
 """
     scan_for_lipograms(text::String, wrt::String; min_length_letters=30, max_length_letters=100)
 
-Scan text for sequences of words that form lipograms with respect to the letters given by `wrt`, i.e. if `s` does not contain any letters from `wrt`.
-The parameter `wrt` is a string so that a single or multiple letters can be easily specified.
+Scan a text and look for sequences of words that are lipograms with respect to the letters given by `wrt`.
 
-It returns a vector of matches where each match is a tuple `(matching_range, matching_string)`.
+Return a vector of matches in the form `(matching_range, matching_string)`.
 
 # Arguments
 - `text`: the input text to scan
-- `min_length_letters=30`: when looking for lipograms, consider only sequences of words whose total length is above this threshold
-- `max_length_letters=100`: when looking for lipograms, consider only sequences of words whose total length is below this threshold
+- `min_length_letters=30`: consider only sequences of words with at least this number of letters
+- `max_length_letters=100`: consider only sequences of words with at most this number of letters
 - `print_results=false`: whether to print results or just return them
+
+See also [`is_lipogram`](@ref).
 
 # Examples
 ```julia-repl
 julia> text = clean_read("../texts/all_shakespeare.txt", newline_replace="/");
 
-julia> scan_for_lipograms(text, "eta", min_length_letters=34) # "ETA" are the most common letters in english
+julia> scan_for_lipograms(text, "eta", min_length_letters=34) # E, T and A are the most common letters in english
 3-element Vector{Any}:
  (1480855:1480902, "up your sword. / NYM. Will you shog off? I would")
  (3647302:3647352, "in music. [Sings.] \"Willow, willow, willow.\" / Moor")

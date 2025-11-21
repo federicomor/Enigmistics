@@ -3,9 +3,14 @@
 
 Check if a string is palindrome, i.e. if it reads the same backward as forward. 
 
+See also [`scan_for_palindromes`](@ref).
+
 # Examples
 ```julia-repl
-julia> is_palindrome("Never odd or even.")
+julia> is_palindrome("Oozy rat in a sanitary zoo")
+true
+
+julia> is_palindrome("Alle carte t'alleni nella tetra cella")
 true
 ```
 """
@@ -24,21 +29,23 @@ end
 """
     scan_for_palindromes(text::String; min_length_letters=6,  max_length_letters=30)
 
-Scan a text to find for pairs of word sequences which are anagrams of each other.
+Scan a text and look for pairs of word sequences which are anagrams.
     
-It returns a vector of matches where each match is a tuple `(matching_range, matching_string)`.
+Return a vector of matches in the form `(matching_range, matching_string)`.
  
 # Arguments
 - `text`: the input text to scan
-- `min_length_letters=6`: when looking for palindromes, consider only sequences of words whose total length is above this threshold
-- `max_length_letters=30`: when looking for palindromes, consider only sequences of words whose total length is below this threshold
+- `min_length_letters=6`: consider only sequences of words with at least this number of letters
+- `max_length_letters=30`: consider only sequences of words with at most this number of letters
 - `print_results=false`: whether to print results or just return them
+
+See also [`is_palindrome`](@ref).
 
 # Examples
 ```julia-repl
 julia> text = clean_read("../texts/ulyss.txt", newline_replace="/");
 
-julia> out = scan_for_palindromes(text,  min_length_letters=10)
+julia> scan_for_palindromes(text,  min_length_letters=10)
 5-element Vector{Any}:
  (266056:266070, "Madam, I'm Adam")
  (266077:266101, "Able was I ere I saw Elba")

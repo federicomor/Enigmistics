@@ -4,14 +4,17 @@ Pages = ["crosswords.md"]
 Depth = 2:3
 ```
 
-## Grid utils 
+## Interface 
 ```@docs
-create_grid
-show_grid
-insert_row_above
-insert_row_below
-insert_col_right
-insert_col_left
-insert
-shrink
+CrosswordWord
+CrosswordBlackCell
+CrosswordPuzzle
+show_crossword
+enlarge!
+shrink!
+can_place_word(cw::CrosswordPuzzle, word::String, row::Int, col::Int, direction::Symbol)
+place_word!
+remove_word!
+place_black_cell!
+remove_black_cell!
 ```

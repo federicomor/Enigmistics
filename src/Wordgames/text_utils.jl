@@ -38,9 +38,11 @@ end
 """
     clean_text(s::AbstractString; newline_replace=" ")
 
-The returned string is cleaned up to work better with the functions of the Enigmistics module. For example: multiple occurrences of newlines, spaces, or tabs get reduced to a single space (newlines information can be preserved by setting a different character in `newline_replace`). 
+Take a string and return a cleaned up version of it.
 
-Read a string and return a string containing its contents. It's the function on which [`clean_read`](@ref) relies on.
+This allows to work better with the functions of the Enigmistics module. For example: multiple occurrences of newlines, spaces, or tabs get reduced to a single space (newlines information can be preserved by setting a different character in `newline_replace`). 
+
+It's the function on which [`clean_read`](@ref) relies on.
 """
 function clean_text(s::AbstractString; newline_replace=" ")
     s_clean = s |> 
@@ -119,7 +121,7 @@ end
 """
     snip(text::String, interval::UnitRange{Int}, pad=10)
 
-Extract a snippet of text from a given range enlarged, on both sides, by the given padding
+Extract a snippet of text from a given range, enlarged on both sides by the given padding.
 
 # Examples
 ```julia-repl

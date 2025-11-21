@@ -5,6 +5,8 @@ Check if two strings are anagrams, i.e. if the letters of one can be rearranged 
 
 The parameter `be_strict` is defaulted to `true` to avoid considering as anagrams strings where one is simply a permutation of the other, while `skip_checks` can be set to `true` to avoid the preliminary operations about lengths checks and characters normalization.
 
+See also [`scan_for_anagrams`](@ref).
+
 # Examples
 ```julia-repl
 julia> are_anagrams("The Morse Code","Here come dots!") # true anagram
@@ -55,17 +57,19 @@ end
 """
     function scan_for_anagrams(text::String; min_length_letters=6, max_length_letters=30, max_distance_words=40, be_strict=true, print_results=false)
 
-Scan a text to find for pairs of word sequences which are anagrams of each other.
+Scan a text and look for pairs of word sequences which are anagrams.
     
-It returns a vector of matches where each match is a tuple `(range1, words1, range2, words2)`.
+Return a vector of matches in the form `(range1, words1, range2, words2)`.
  
 # Arguments
 - `text`: the input text to scan
-- `min_length_letters=6`: when looking for anagrams, consider only sequences of words whose total length is above this threshold
-- `max_length_letters=30`: when looking for anagrams, consider only sequences of words whose total length is below this threshold
-- `max_distance_words=40`: ignore anagrams which could occurr too far apart (in number of words)
-- `be_strict=true`: as in [`are_anagrams`](@ref), do not consider as anagrams sequences where one is simply a permutation of the other
+- `min_length_letters=6`: consider only sequences of words with at least this number of letters
+- `max_length_letters=30`: consider only sequences of words with at most this number of letters
+- `max_distance_words=40`: consider only sequences of words which are at most these words apart
+- `be_strict=true`: do not consider as anagrams sequences where one is simply a permutation of the other
 - `print_results=false`: whether to print results or just return them
+
+See also [`are_anagrams`](@ref).
 
 # Examples
 ```julia-repl
